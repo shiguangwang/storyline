@@ -1,3 +1,23 @@
 data:
-  srcdir: /home/shiguang/Research/ApolloStoryLine/data/Protests/cluster_head
-  outputdir: /home/shiguang/Projects/evtrack/data
+  srcdir: /home/shiguang/Research/ApolloStoryLine/data/
+  outdir: /home/shiguang/Projects/evtrack/data
+  protests:
+    subdir: Protests/cluster_head  # relative to the parent srcdir
+    searchwords: ['protest', 'confrontation']
+
+storyline:
+  datadir: storyline  # the relative directory upon outdir
+  preprocess:
+    datadir: preprocess  # the relative directory upon storyline.datadir
+    tidfilename: __twid.txt  # let's keep the meta file starts with "__"
+    twkeys: ['text', 'id', 'favorite_count', 'coordinates', 'retweet_count',
+             'user', 'geo', 'created_at', 'place']
+    userkeys: ['screen_name', 'favourites_count', 'id', 'friends_count',
+               'geo_enabled', 'followers_count', 'location']
+    # The extra stopwords to be exclided from considering the keywords
+    stopwords: ['January', 'Feburary', 'March', 'April', 'May', 'June', 'July',
+                'August', 'September', 'October', 'November', 'December', 
+                'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
+                'Saturday', 'Sunday', 'thing', 'would']
+    kw_len_thresh: 5  # The length threshold for a keyword
+    kw_pop_thresh: 10  # The popular threshold

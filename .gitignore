@@ -97,3 +97,6 @@ data/
 
 # local test file
 _test.py
+
+# ignore vim temp file
+*.swp
