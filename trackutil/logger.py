@@ -93,3 +93,19 @@ def ERROR(msg):
     fn = strip_root(fn)
     log = Log_()
     log.error(msg, fn, ln)
+
+
+def LOG(level, msg):
+    (_, fn, ln, _, _, _) = inspect.getouterframes(inspect.currentframe())[1]
+    fn = strip_root(fn)
+    log = Log_()
+    if level == 'INFO':
+        log.info(msg, fn, ln)
+    elif level == 'WARNING':
+        log.warning(msg, fn, ln)
+    elif level == 'DEBUG':
+        log.debug(msg, fn, ln)
+    elif level == 'ERROR':
+        log.error(msg, fn, ln)
+    else:
+        ERROR("Log level unrecognized")

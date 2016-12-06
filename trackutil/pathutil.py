@@ -25,6 +25,13 @@ def get_datafiles_in_dir(d):
     return filenames
 
 
+def get_timestamps_in_dir(d):
+    ''' Get all the timestamps in data file names in a dir.'''
+    filenames = get_datafiles_in_dir(d)
+    filenames = [f.split('.')[0] for f in filenames]
+    return filenames
+
+
 def get_obsolute_path(d1, *ds):
     ''' Get the obsolute path of one of a bunch of subsequent paths '''
     cfg = get_config()

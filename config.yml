@@ -7,7 +7,10 @@ data:
 
 storyline:
   datadir: storyline  # the relative directory upon outdir
+  windowlen: 6  # the window length in hours
+  slidinglen: 1  # the sliding length in hours
   preprocess:
+    batchsize: 500 # the number of files to be considered, -1 means unlimited
     datadir: preprocess  # the relative directory upon storyline.datadir
     tidfilename: __twid.txt  # let's keep the meta file starts with "__"
     twkeys: ['text', 'id', 'favorite_count', 'coordinates', 'retweet_count',
@@ -20,4 +23,13 @@ storyline:
                 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday', 'thing', 'would']
     kw_len_thresh: 5  # The length threshold for a keyword
-    kw_pop_thresh: 10  # The popular threshold
+  bucketize:
+    datadir: bucketize  # the relative dir upon storyline.datadir
+  detect:
+    datadir: detect  # relative upon storyline.datadir
+    kw_pop_thresh: 5 # The popular threshold
+    ig_thresh: 0.001 # The information gain threshold
+  consolidate:
+    datadir: consolidate # relative upon storyline.datadir
+    top_k: 15 # we only consider the top frequent N tokens in calculating Jaccard distance
+    jaccard_thresh: 0.75 # the threshold to consolidate buckets

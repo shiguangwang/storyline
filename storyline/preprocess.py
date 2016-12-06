@@ -24,11 +24,10 @@ def preprocess(input_dir, output_dir, exclude_kwlist):
     filenames = get_datafiles_in_dir(input_dir)
     processed = 0
     total = len(filenames)
-    # TODO Remove the TEMP_THRESH in prod
-    TEMP_THRESH = 1
+    # the threshold of the number of files to be considered, -1 mean unlimited
+    batchsize = cfg['storyline']['preprocess']['batchsize']
     for fn in filenames:
-        # TODO clean this part in prod
-        if processed >= TEMP_THRESH:
+        if batchsize >= 0 and processed >= batchsize:
             break
         tweets = get_tweets(os.path.join(input_dir, fn))
         tweets_cleaned = TwProcessor.remove_redundant_tweets(tweets, twid_fn)
@@ -127,7 +126,7 @@ class TwProcessor:
         return tweets
 
 
-if __name__ == '__main__':
+def main():
     cfg = get_config()
     input_dir = os.path.join(cfg['data']['srcdir'],
                              cfg['data']['protests']['subdir'])
@@ -137,3 +136,7 @@ if __name__ == '__main__':
     print input_dir
     print output_dir
     preprocess(input_dir, output_dir, cfg['data']['protests']['searchwords'])
+
+
+if __name__ == "__main__":
+    main()
