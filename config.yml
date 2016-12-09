@@ -23,6 +23,10 @@ storyline:
                 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday', 'thing', 'would']
     kw_len_thresh: 5  # The length threshold for a keyword
+  diversify:
+    datadir: diversify # relative dir upon storyline.datadir
+    kw_remove_thresh: 0.9 # the probability that two kw appear adjacently in all the tweets
+    redundant_pairs_fn: __redundant.json # the filename of redundant tweets
   bucketize:
     datadir: bucketize  # the relative dir upon storyline.datadir
   detect:

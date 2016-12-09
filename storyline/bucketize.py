@@ -14,7 +14,7 @@ def bucketize():
     '''
     cfg = get_config()
     datadir = os.path.join(cfg['data']['outdir'], cfg['storyline']['datadir'])
-    preprocessdir = cfg['storyline']['preprocess']['datadir']
+    preprocessdir = cfg['storyline']['diversify']['datadir']
     bucketizedir = cfg['storyline']['bucketize']['datadir']
     inputdir = os.path.join(datadir, preprocessdir)
     outputdir = os.path.join(datadir, bucketizedir)
