@@ -1,0 +1,8 @@
+[Problem]
+Currently, lots of the consolidated buckets are not of useful events. We want to purify those buckets and only consider the meaningful events.
+
+[Idea]
+0. We partition the consolidated events into testing and training groups.
+1. For the training groups, we manually mark each event as [True/False], where True means that it is an interesting event, and False means it is not of any interest at all. Just binary classification. For all the tokens belonging to the True events, we do the histogram stats, and for all the tokens belonging to the False events, we do the same thing. 
+2. For the testing group, we calculate a score of interest, and plot the P/R curve. The score can be calculated just adding the score (? in this approach we might not have a meaningful threshold for it... hmmm....) Maybe some supervised learning algorithm just those basic one for binary classification would be fine. 
+

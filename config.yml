@@ -37,3 +37,5 @@ storyline:
     datadir: consolidate # relative upon storyline.datadir
     top_k: 15 # we only consider the top frequent N tokens in calculating Jaccard distance
     jaccard_thresh: 0.75 # the threshold to consolidate buckets
+  summarize:
+    datadir: summarize # relative upon storyline.datadir
