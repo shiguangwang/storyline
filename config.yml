@@ -32,7 +32,7 @@ storyline:
     stopwords: ['January', 'Feburary', 'March', 'April', 'May', 'June', 'July',
                 'August', 'September', 'October', 'November', 'December', 
                 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
-                'Saturday', 'Sunday', 'thing', 'would']
+                'Saturday', 'Sunday', 'thing', 'would', 'could']
     kw_len_thresh: 4  # The length threshold for a keyword
 
   diversify:
@@ -64,7 +64,7 @@ storyline:
 
   partition:
     datadir: partition # relative upon storyline.datadir
-    partition_thresh: 0.3 # the threshold of edge weight to stop partitioning, weight in [0, 1.0]
+    partition_thresh: 0.15 # the threshold of edge weight to stop partitioning, weight in [0, 1.0]
     huge_cluster_thresh: 30 # cluster with tweets more than the thresh is defined as huge cluster
 
   purify:
