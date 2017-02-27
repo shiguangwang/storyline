@@ -5,6 +5,9 @@ import os
 from trackutil.confutil import get_config
 from trackutil.logger import INFO
 from trackutil.pathutil import mkdir, get_datafiles_in_dir
+from trackutil.pathutil import get_storyline_root
+from trackutil.pathutil import get_storyline_module_dir
+from trackutil.pathutil import get_ts_int_in_dir
 from trackutil.ioutil import jsonload, jsondump
 
 
@@ -21,6 +24,111 @@ def main():
     INFO(len(redundant_pairs))
     jsondump(redundant_pairs, os.path.join(outputdir, redundant_pairs_fn))
     diversify(inputdir, outputdir, set(redundant_pairs.keys()))
+
+
+def diversify_new(ts, cfg):
+    INFO('[Diversify] {}'.format(ts))
+    inputdir = get_storyline_module_dir(cfg, 'preprocess')
+    outputdir = get_storyline_module_dir(cfg, 'diversify')
+    mkdir(outputdir)
+    sticky_pairs = gen_sticky_pairs(ts, cfg)
+    INFO(len(sticky_pairs))
+    tweets = jsonload(os.path.join(inputdir, '{}.json'.format(ts)))
+    tweets_cleaned = []
+    for tweet in tweets:
+        kwpairs = tweet['kwpairs']
+        for skwp in sticky_pairs:
+            if tuple(sorted(skwp)) in kwpairs:
+                kwpairs.remove(tuple(sorted(skwp)))
+        if len(kwpairs) > 0:
+            tweet['kwpairs'] = kwpairs
+            tweets_cleaned.append(tweet)
+        else:
+            INFO('Removed one tweet by diversify')
+    jsondump(tweets_cleaned, os.path.join(outputdir, '{}.json'.format(ts)))
+
+
+def gen_sticky_pairs(ts, cfg):
+    '''
+    This function get all redundant kw pairs for tweets.
+    The definition of sticky pairs is:
+        1. The kw pair must be adjacent
+        2. When they appear, they always appear together
+        3. The appeared order is always the same.
+        There *always* is defined in a threshold fashion
+    '''
+    inputdir = get_storyline_module_dir(cfg, 'preprocess')
+    root = get_storyline_root(cfg)
+    metadir = os.path.join(root, cfg['storyline']['diversify']['metadir'])
+    mkdir(metadir)
+    ts_list = get_ts_int_in_dir(inputdir)
+    cur_idx = ts_list.index(ts)
+    lookback_cnt = cfg['storyline']['diversify']['lookback']
+    kw2tweets = {}
+    adjacent_kwp_list = []
+    sticky_kwp_list = []
+    tweets = jsonload(os.path.join(inputdir, '{}.json'.format(ts)))
+    for tweet in tweets:
+        keywords = tweet['keywords']
+        for kw in keywords:
+            if kw not in kw2tweets:
+                kw2tweets[kw] = []
+            kw2tweets[kw].append(tweet)
+        for i in range(len(keywords) - 1):
+            adjacent_kwp_list.append((keywords[i], keywords[i + 1]))
+    INFO(len(adjacent_kwp_list))
+    jsondump(kw2tweets, os.path.join(metadir, '{}.kw2tweets.json'.format(ts)))
+    jsondump(adjacent_kwp_list,
+             os.path.join(metadir, '{}.akwp.json'.format(ts)))
+
+    for t in ts_list[:cur_idx][-lookback_cnt:]:
+        INFO('Processing historical ts {}, cur ts is {}'.format(t, ts))
+        tmp_kw2tweets = jsonload(
+            os.path.join(metadir, '{}.kw2tweets.json'.format(t)))
+        tmp_adjacent_kwp_list = jsonload(
+            os.path.join(metadir, '{}.akwp.json'.format(t)))
+        for kw in tmp_kw2tweets:
+            if kw in kw2tweets:
+                kw2tweets[kw].extend(tmp_kw2tweets[kw])
+            else:
+                kw2tweets[kw] = tmp_kw2tweets[kw]
+        adjacent_kwp_list.extend(tmp_adjacent_kwp_list)
+
+    kw_removal_thresh = cfg['storyline']['diversify']['kw_remove_thresh']
+    #  for t in ts_list[:cur_idx + 1][-lookback_cnt:]:
+    #      fn = os.path.join(inputdir, '{}.json'.format(t))
+    #      tweets = jsonload(fn)
+    #      for tweet in tweets:
+    #          keywords = tweet['keywords']
+    #          for kw in keywords:
+    #              if kw not in kw2tweets:
+    #                  kw2tweets[kw] = []
+    #              kw2tweets[kw].append(tweet)
+    #          for i in range(len(keywords) - 1):
+    #              adjacent_kwp_list.append((keywords[i], keywords[i + 1]))
+    for akwp in adjacent_kwp_list:
+        intersection = []
+        (kw1, kw2) = akwp
+        tidset1 = set([t['id'] for t in kw2tweets[kw1]])
+        tidset2 = set([t['id'] for t in kw2tweets[kw2]])
+        tidintersection = tidset1.intersection(tidset2)
+        for tweet in kw2tweets[kw1]:
+            if tweet['id'] in tidintersection:
+                intersection.append(tweet)
+        cnt = 0
+        for tweet in intersection:
+            keywords = tweet['keywords']
+            if kw1 not in keywords:
+                continue
+            if kw2 not in keywords:
+                continue
+            idx1 = keywords.index(kw1)
+            idx2 = keywords.index(kw2)
+            if idx2 - idx1 == 1:
+                cnt += 1
+        if cnt >= kw_removal_thresh * len(intersection):
+            sticky_kwp_list.append(akwp)
+    return sticky_kwp_list
 
 
 def get_redundant_pairs(inputdir, thresh):

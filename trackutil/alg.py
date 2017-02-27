@@ -3,7 +3,28 @@
 from collections import Counter
 
 import math
-import sys
+import statistics
+
+
+def cal_mean(l):
+    '''
+    calculate the mean of a list of values
+    '''
+    return statistics.mean(l)
+
+
+def cal_var(l):
+    '''
+    calculate the variance of a list of values
+    '''
+    return statistics.variance(l)
+
+
+def cal_mean_var(l):
+    '''
+    return the mean and variance at the same time
+    '''
+    return (cal_mean(l), cal_var(l))
 
 
 def jaccard(b1, b2, top_k=-1):
@@ -36,14 +57,38 @@ def jaccard_dist(s1, s2):
     '''
     Jaccard dist = 1 - Jaccard similarity
     '''
+    return 1 - jaccard_similarity(s1, s2)
+
+
+def jaccard_similarity(s1, s2):
+    '''
+    Jaccard similarity, the inputs will be two token collections
+    '''
     s1 = set(s1)
     s2 = set(s2)
     setu = s1.union(s2)
     seti = s1.intersection(s2)
+    return jaccard_similarity_core(seti, setu)
+
+
+def jaccard_similarity_var(s1, s2):
+    '''
+    A variant of Jaccard similarity, the inputs are the same as the normal one
+    '''
+    s1 = set(s1)
+    s2 = set(s2)
+    seti = s1.intersection(s2)
+    if len(s1) < len(s2):
+        setu = s1
+    else:
+        setu = s2
+    return jaccard_similarity_core(seti, setu)
+
+
+def jaccard_similarity_core(seti, setu):
     if len(setu) == 0:
-        return sys.float_info.max
-    ret = len(seti) * 1.0 / len(setu)
-    return 1 - ret
+        return 1.0
+    return len(seti) * 1.0 / len(setu)
 
 
 def ig(a, b, c, d):

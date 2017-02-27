@@ -5,6 +5,7 @@ import os
 from trackutil.alg import jaccard
 from trackutil.confutil import get_config
 from trackutil.pathutil import mkdir, get_datafiles_in_dir
+from trackutil.pathutil import get_storyline_module_dir
 from trackutil.ioutil import jsonload, jsondump
 from trackutil.logger import INFO
 
@@ -26,12 +27,34 @@ def consolidation(inputdir, outputdir, thresh, top_k):
     processed = 0
     total = len(fn_list)
     for fn in fn_list:
-        buckets = jsonload(os.path.join(inputdir, fn))
-        consolidated_buckets = consolidate(buckets, thresh, top_k)
-        jsondump(consolidated_buckets, os.path.join(outputdir, fn))
+        inputfn = os.path.join(inputdir, fn)
+        outputfn = os.path.join(outputdir, fn)
+        consolidation_core(inputfn, outputfn, thresh, top_k)
         processed += 1
         INFO('{0}% processed {1}/{2}'.format(
             processed * 100.0 / total, processed, total))
+
+
+def consolidate_new(ts, cfg=None):
+    INFO('[Consolidate] {}'.format(ts))
+    if cfg is None:
+        cfg = get_config()
+    inputdir = get_storyline_module_dir(cfg, 'detect')
+    outputdir = get_storyline_module_dir(cfg, 'consolidate')
+    mkdir(outputdir)
+    inputfn = os.path.join(inputdir, '{}.json'.format(ts))
+    outputfn = os.path.join(outputdir, '{}.json'.format(ts))
+    thresh = cfg['storyline']['consolidate']['jaccard_thresh']
+    top_k = cfg['storyline']['consolidate']['top_k']
+    consolidation_core(inputfn, outputfn, thresh, top_k)
+
+
+def consolidation_core(inputfn, outputfn, thresh, top_k):
+    buckets = jsonload(inputfn)
+    if buckets is None:
+        return
+    consolidated_buckets = consolidate(buckets, thresh, top_k)
+    jsondump(consolidated_buckets, outputfn)
 
 
 def consolidate(buckets, thresh, top_k):

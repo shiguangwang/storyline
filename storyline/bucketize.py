@@ -4,7 +4,8 @@ import os
 from trackutil.confutil import get_config
 from trackutil.ioutil import jsondump, jsonload
 from trackutil.pathutil import mkdir, get_datafiles_in_dir
-from trackutil.logger import LOG
+from trackutil.pathutil import get_storyline_module_dir
+from trackutil.logger import LOG, INFO
 
 
 def bucketize():
@@ -35,16 +36,49 @@ def bucketize_core(inputdir, outputdir):
             LOG('INFO', '{0}/{1} processed'.format(processed, total))
 
 
+def bucketize_new(ts, cfg=None):
+    INFO('[Bucketize] {}'.format(ts))
+    if cfg is None:
+        cfg = get_config()
+    input_dir = get_storyline_module_dir(cfg, 'preprocess')
+    output_dir = get_storyline_module_dir(cfg, 'bucketize')
+    mkdir(output_dir)
+    tweets = jsonload(os.path.join(input_dir, '{}.json'.format(ts)))
+    buckets = bucktize_tweet(tweets)
+    kw_pop_thresh = cfg['storyline']['bucketize']['kw_pop_thresh']
+    buckets_cleaned = {}
+    for kwp in buckets:
+        if len(buckets[kwp]) < kw_pop_thresh:
+            continue
+        buckets_cleaned[kwp] = buckets[kwp]
+    jsondump(buckets_cleaned, os.path.join(output_dir, '{}.json'.format(ts)))
+
+
 def bucktize_tweet(tweets):
     ''' Generate buckets, kw pairs, from the tweets '''
     buckets = {}
+    key2tids = {}
+    tidset = set([])
     for t in tweets:
+        if t['id'] in tidset:
+            INFO('Found anamaly')
+            continue
+        tidset.add(t['id'])
         for kwpair in t['kwpairs']:
             key = '__'.join(kwpair)
+            if key not in key2tids:
+                key2tids[key] = set([])
+            if t['id'] in key2tids[key]:
+                # 'Found duplicated tid'
+                continue
+            key2tids[key].add(t['id'])
             if key not in buckets:
                 buckets[key] = []
             buckets[key].append(
-                [t['id'], t['text'], t['created_at'], t['keywords']])
+                [t['id'], t['text'], 0, t['keywords']])
+            # This is used in Prasanna's dataset (I-buckets)
+            #  buckets[key].append(
+            #      [t['id'], t['text'], t['tstamp'], t['keywords']])
     return buckets
 
 

@@ -1,20 +1,31 @@
 data:
-  srcdir: /home/shiguang/Research/ApolloStoryLine/data/
-  outdir: /home/shiguang/Projects/evtrack/data
+  # srcdir: /home/shiguang/Research/ApolloStoryLine/data/Disasters/cluster_head
+  srcdir: /home/shiguang/Research/ApolloStoryLine/data/War/cluster_head
+  # srcdir: /home/shiguang/Research/ApolloStoryLine/data/
+  # srcdir: /home/shiguang/Projects/evtrack/data/workshop/OneHourSplit_processed_100/
+  # srcdir: /home/shiguang/Projects/evtrack/data/workshop/Marathon/OneHour_processed
+  # outdir: /home/shiguang/Projects/evtrack/data/workshop/Marathon
+  # outdir: /home/shiguang/Projects/evtrack/data/thesis/Disasters
+  outdir: /home/shiguang/Projects/evtrack/data/thesis/War
+  fn_suffix: '.60m.cluster_head.txt'  # the default suffix of cluster_head
+  # searchwords: ['disaster', 'humanitarian', 'red', 'cross'] # Disaster
+  searchwords: ['rebel', 'attack', 'bombing'] # War
   protests:
-    subdir: Protests/cluster_head  # relative to the parent srcdir
-    searchwords: ['protest', 'confrontation']
+    # subdir: Protests/cluster_head  # relative to the parent srcdir
+    subdir: ./
+    searchwords: ['protest'] 
 
 storyline:
-  datadir: storyline  # the relative directory upon outdir
-  windowlen: 6  # the window length in hours
+  datadir: t_buckets  # the relative directory upon outdir
+  windowlen: 24  # the window length in hours
   slidinglen: 1  # the sliding length in hours
+  event_id_gen_fn: __event_id.json
+
   preprocess:
-    batchsize: 500 # the number of files to be considered, -1 means unlimited
+    batchsize: -1 # the number of files to be considered, -1 means unlimited
     datadir: preprocess  # the relative directory upon storyline.datadir
     tidfilename: __twid.txt  # let's keep the meta file starts with "__"
-    twkeys: ['text', 'id', 'favorite_count', 'coordinates', 'retweet_count',
-             'user', 'geo', 'created_at', 'place']
+    twkeys: ['text', 'id']
     userkeys: ['screen_name', 'favourites_count', 'id', 'friends_count',
                'geo_enabled', 'followers_count', 'location']
     # The extra stopwords to be exclided from considering the keywords
@@ -22,20 +33,64 @@ storyline:
                 'August', 'September', 'October', 'November', 'December', 
                 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
                 'Saturday', 'Sunday', 'thing', 'would']
-    kw_len_thresh: 5  # The length threshold for a keyword
+    kw_len_thresh: 4  # The length threshold for a keyword
+
   diversify:
     datadir: diversify # relative dir upon storyline.datadir
+    metadir: diversify_meta
     kw_remove_thresh: 0.9 # the probability that two kw appear adjacently in all the tweets
     redundant_pairs_fn: __redundant.json # the filename of redundant tweets
+    lookback: 24  # max number of hours that we look back the check redundant
+
   bucketize:
     datadir: bucketize  # the relative dir upon storyline.datadir
+    kw_pop_thresh: 3
+
   detect:
     datadir: detect  # relative upon storyline.datadir
+    metadatadir: detect_high_ig_kwp  # relative upon storyline datadir
     kw_pop_thresh: 5 # The popular threshold
-    ig_thresh: 0.001 # The information gain threshold
+    ig_thresh: 0.003 # The information gain threshold
+
   consolidate:
     datadir: consolidate # relative upon storyline.datadir
     top_k: 15 # we only consider the top frequent N tokens in calculating Jaccard distance
     jaccard_thresh: 0.75 # the threshold to consolidate buckets
+
+  absorb:
+    datadir: absorb # the relative upon storyline.datadir
+    similarity_thresh: 0.7  # the similarity threshold
+    absorb_thresh: 0.5  # the absorbing thresh
+
+  partition:
+    datadir: partition # relative upon storyline.datadir
+    partition_thresh: 0.3 # the threshold of edge weight to stop partitioning, weight in [0, 1.0]
+    huge_cluster_thresh: 30 # cluster with tweets more than the thresh is defined as huge cluster
+
+  purify:
+    datadir: purify # relative upon storyline.datadir
+    beta_mean_thresh: 0.03 # the classifier threshold for true/false positives
+    bucket_size_thresh: 100 # if bucket has more tweets, we stop tracking it
+
+  reformat:
+    datadir: reformat # relative upon storyline.datadir
+
   summarize:
-    datadir: summarize # relative upon storyline.datadir
+    datadir: tbuckets_summarize # relative upon storyline.datadir
+
+  fusion:  # here we try to match the i-events and t-events, so this is the fusion step
+    datadir: fusion
+    # instagramdir: '/home/shiguang/Projects/evtrack/data/workshop/t_buckets_24/ibuckets/ibuckets'
+    instagramdir: '/home/shiguang/Projects/evtrack/data/workshop/ibuckets/ibuckets'
+
+  track:  # here we track events it can be built on top of reformat or on top of fusion
+    datadir: track
+    correlation_thresh: 0.7  # if more than 0.7 of one bucket overlapps with the other we correlated them
+    similarity_thresh: 0.7  # if more than 0.7 of one tweet's token is contained in another, we correlated them
+
+  track_summary:  # we summary the tracked events
+    datadir: track_summary
+    statedir: track_summary_state
+
+  fusion_summarize:
+    datadir: fusion_summarize
