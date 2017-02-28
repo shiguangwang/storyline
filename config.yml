@@ -32,7 +32,7 @@ storyline:
     stopwords: ['january', 'feburary', 'march', 'april', 'may', 'june', 'july',
                 'august', 'september', 'october', 'november', 'december', 
                 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 
-                'saturday', 'sunday', 'thing', 'would', 'could', 'hiring']
+                'saturday', 'sunday', 'thing', 'would', 'could', 'hiring', 'job']
     kw_len_thresh: 4  # The length threshold for a keyword
 
   diversify:
