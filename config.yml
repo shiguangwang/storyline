@@ -29,10 +29,10 @@ storyline:
     userkeys: ['screen_name', 'favourites_count', 'id', 'friends_count',
                'geo_enabled', 'followers_count', 'location']
     # The extra stopwords to be exclided from considering the keywords
-    stopwords: ['January', 'Feburary', 'March', 'April', 'May', 'June', 'July',
-                'August', 'September', 'October', 'November', 'December', 
-                'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
-                'Saturday', 'Sunday', 'thing', 'would', 'could']
+    stopwords: ['january', 'feburary', 'march', 'april', 'may', 'june', 'july',
+                'august', 'september', 'october', 'november', 'december', 
+                'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 
+                'saturday', 'sunday', 'thing', 'would', 'could', 'hiring']
     kw_len_thresh: 4  # The length threshold for a keyword
 
   diversify:
